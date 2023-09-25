@@ -12,7 +12,7 @@ function readCSVFile(filePath){
 async function getWeatherData() {
     console.log("Buscando dados meteorológicos...");
 
-    const apiWeatherURL = `https://api.weatherbit.io/v2.0/history/daily?city_id=3399415&start_date=2023-08-01&end_date=2023-08-32&units=metric&key=API_KEY`;
+    const apiWeatherURL = `https://api.weatherbit.io/v2.0/history/daily?city_id=3399415&start_date=2023-08-01&end_date=2023-08-32&units=metric&key=d80813fa6eb64eee867ae8b23a2d6615`;
   
     try {
       const res = await fetch(apiWeatherURL);
@@ -28,35 +28,51 @@ async function getWeatherData() {
     }
   }
 
-  let dataRows = "";
-  let highestRevenue = 0;
-  let dayWithHighestRevenue = 0;
-  let lowestRevenue = Infinity;
-  let dayWithLowestRevenue = 100000;
-  let revenues = [];
-  let totalRevenue = 0;
+  var dataRows = "";
+  var highestRevenue = 0;
+  var dayWithHighestRevenue = 0;
+  var lowestRevenue = 100000;
+  var dayWithLowestRevenue = 100000;
+  var revenues = [];
+  var totalRevenue = 0;
 
-  function calculateRevenue(day, water, soda, popsicle, iceCream){
+  function calculateRevenue(day, soda, water, popsicle, iceCream){
 
     if(day == 1){
       console.log("Calculando faturamento...")
     }
 
-    let revenue = 0;
-    revenue = (water * 3) + (soda * 5) + (popsicle * 7) + (iceCream * 9);
+    var revenue = 0;
+    revenue = (soda * 5) + (water * 3) + (popsicle * 7) + (iceCream * 9);
+
+    if(revenue > highestRevenue){
+      highestRevenue = revenue
+      dayWithHighestRevenue = day
+    }
+
+    if(revenue < lowestRevenue){
+      lowestRevenue = revenue
+      dayWithLowestRevenue = day
+    }
     
     //Capturando dados para calcular a média de faturamento
     revenues.push(revenue)
     totalRevenue += revenue;
     
     const result = {
-      dayWithHighestRevenue: revenue > highestRevenue ? day : dayWithHighestRevenue,
-      highestRevenue: Math.max(highestRevenue, revenue),
-      dayWithLowestRevenue: revenue < lowestRevenue ? day : dayWithLowestRevenue,
-      lowestRevenue: Math.min(lowestRevenue, revenue),
+      dayWithHighestRevenue: dayWithHighestRevenue,
+      highestRevenue: highestRevenue,
+      dayWithLowestRevenue: dayWithLowestRevenue,
+      lowestRevenue: lowestRevenue,
       totalRevenue: totalRevenue,
     };
- 
+    
+    soda = 0;
+    water = 0;
+    popsicle = 0;
+    iceCream = 0;
+    revenue = 0;
+
     return result;
 
 }
@@ -99,19 +115,23 @@ async function processData(){
         sodaQuantity += soda;
         
         //Somando a quantidade de aguas
-        const water = parseFloat(columns[2]);
+        const water = parseInt(columns[2]);
         waterQuantity += water;
         
 
         //Somando a quandtidade de picole
-        const popsicle = parseFloat(columns[3]);
+        const popsicle = parseInt(columns[3]);
         popsicleQuantity += popsicle;
 
         //Somando a quantidade de sorvete
-        const iceCream = parseFloat(columns[4]);
+        const iceCream = parseInt(columns[4]);
         iceCreamQuantity += iceCream;
 
         calculationResult = calculateRevenue(columns[0], sodaQuantity, waterQuantity, popsicleQuantity, iceCreamQuantity);
+        iceCreamQuantity = 0;
+        popsicleQuantity = 0;
+        waterQuantity = 0;
+        sodaQuantity = 0;
 
 
         columns.push(`${daysWeather[i - 1].min_temp}/${daysWeather[i - 1].max_temp}`);
