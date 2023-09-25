@@ -10,7 +10,7 @@ function readCSVFile(filePath){
 
 //Função para buscar os dados meteorológicos
 async function getWeatherData() {
-    console.log("Buscando dados metereológicos...");
+    console.log("Buscando dados meteorológicos...");
 
     const apiWeatherURL = `https://api.weatherbit.io/v2.0/history/daily?city_id=3399415&start_date=2023-08-01&end_date=2023-08-32&units=metric&key=API_KEY`;
   
@@ -29,7 +29,6 @@ async function getWeatherData() {
   }
 
   let dataRows = "";
-  
   let highestRevenue = 0;
   let dayWithHighestRevenue = 0;
   let lowestRevenue = Infinity;
@@ -74,7 +73,7 @@ async function processData(){
         return;
     }
 
-    console.log("Processando Dados...")
+    console.log("Processando dados...")
 
     let sodaQuantity = 0;
     let waterQuantity = 0;
