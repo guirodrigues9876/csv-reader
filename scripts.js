@@ -2,6 +2,7 @@ import fs from 'fs';
 
 //Função para ler o arquivo CSV
 function readCSVFile(filePath){
+    console.log("Lendo arquivo CSV...");
     const data = fs.readFileSync('planilha.csv', 'utf8');
     const lines = data.split("\r\n")
     return lines;
@@ -9,6 +10,8 @@ function readCSVFile(filePath){
 
 //Função para buscar os dados meteorológicos
 async function getWeatherData() {
+    console.log("Buscando dados metereológicos...");
+
     const apiWeatherURL = `https://api.weatherbit.io/v2.0/history/daily?city_id=3399415&start_date=2023-08-01&end_date=2023-08-32&units=metric&key=API_KEY`;
   
     try {
@@ -25,39 +28,42 @@ async function getWeatherData() {
     }
   }
 
-  let dado;
-  let dado1 = "";
+  let dataRow;
+  let dataRows = "";
   
-  var maiorFat = 0;
-  var diaMaiorFat = 0;
-  var menorFat = Infinity;
-  var diaMenorFat = 100000;
-  var faturamentos = [];
-  var fatTotal = 0;
-  var mediaFat = 0;
+  var highestRevenue = 0;
+  var dayWithHighestRevenue = 0;
+  var lowestRevenue = Infinity;
+  var dayWithLowestRevenue = 100000;
+  var revenues = [];
+  var totalRevenue = 0;
 
-  function calculate(dia, agua, refri, picole, sorvete){
-    
-    var fat = 0;
-    fat = (agua * 3) + (refri * 5) + (picole * 7) + (sorvete * 9);
+  function calculateRevenue(day, water, soda, popsicle, iceCream){
+
+    if(day == 1){
+      console.log("Calculando faturamento...")
+    }
+
+    var revenue = 0;
+    revenue = (water * 3) + (soda * 5) + (popsicle * 7) + (iceCream * 9);
     
     //Capturando dados para calcular a média de faturamento
-    faturamentos.push(fat)
-    fatTotal += fat;
+    revenues.push(revenue)
+    totalRevenue += revenue;
     
-    const resultado = {
-      diaMaiorFat: fat > maiorFat ? dia : diaMaiorFat,
-      maiorFat: Math.max(maiorFat, fat),
-      diaMenorFat: fat < menorFat ? dia : diaMenorFat,
-      menorFat: Math.min(menorFat, fat),
-      fatTotal: fatTotal,
+    const result = {
+      dayWithHighestRevenue: revenue > highestRevenue ? day : dayWithHighestRevenue,
+      highestRevenue: Math.max(highestRevenue, revenue),
+      dayWithLowestRevenue: revenue < lowestRevenue ? day : dayWithLowestRevenue,
+      lowestRevenue: Math.min(lowestRevenue, revenue),
+      totalRevenue: totalRevenue,
     };
  
-    return resultado;
+    return result;
 
 }
 
-let resultadoCalculate;
+let calculationResult;
 
 //Função principal para processar os dados
 async function processData(){
@@ -69,10 +75,12 @@ async function processData(){
         return;
     }
 
-    let qtdRefri = 0;
-    let qtdAgua = 0;
-    let qtdPicole = 0;
-    let qtdSorvete = 0;
+    console.log("Processando Dados...")
+
+    let sodaQuantity = 0;
+    let waterQuantity = 0;
+    let popsicleQuantity = 0;
+    let iceCreamQuantity = 0;
 
     for(let i = 0; i < lines.length; i++){
       
@@ -84,51 +92,54 @@ async function processData(){
         columns.push("Porcentagem de Nuvens")
 
         //Juntar novamente as colunas utilizando a vírgula
-        dado = columns.join(",")
+        dataRow = columns.join(",")
 
         //Vai interando os dados 
-        dado1 = dado1.concat("", dado) 
+        dataRows = dataRows.concat("", dataRow) 
 
       }else{
         
         // Somando a quantidade de refri
-        const refri = parseInt(columns[1]);
-        qtdRefri += refri;
+        const soda = parseInt(columns[1]);
+        sodaQuantity += soda;
         
         //Somando a quantidade de aguas
-        const agua = parseFloat(columns[2]);
-        qtdAgua += agua;
+        const water = parseFloat(columns[2]);
+        waterQuantity += water;
         
 
         //Somando a quandtidade de picole
-        const picole = parseFloat(columns[3]);
-        qtdPicole += picole;
+        const popsicle = parseFloat(columns[3]);
+        popsicleQuantity += popsicle;
 
         //Somando a quantidade de sorvete
-        const sorvete = parseFloat(columns[4]);
-        qtdSorvete += sorvete;
+        const iceCream = parseFloat(columns[4]);
+        iceCreamQuantity += iceCream;
 
-        resultadoCalculate = calculate(columns[0], qtdRefri, qtdAgua, qtdPicole, qtdSorvete);
+        calculationResult = calculateRevenue(columns[0], sodaQuantity, waterQuantity, popsicleQuantity, iceCreamQuantity);
 
         columns.push(daysWeather[i - 1].min_temp.toString() + '/' + daysWeather[i - 1].max_temp.toString());
         columns.push(daysWeather[i-1].max_wind_spd.toString())
         columns.push(daysWeather[i-1].clouds.toString())
         
         //Juntar novamente as colunas utilizando a vírgula
-        dado = columns.join(",")
-        //Vai interando os dados
-        dado1 = dado1.concat("\n", dado)
+        dataRow = columns.join(",")
+
+        //Concatena as linhas
+        dataRows = dataRows.concat("\n", dataRow)
       }          
     }
 
     // Calcula a média de faturamento
-    mediaFat = fatTotal / faturamentos.length;    
-    resultadoCalculate.mediaFat = mediaFat.toFixed(2)
+    var averageRevenue = totalRevenue / revenues.length;    
+    calculationResult.averageRevenue = averageRevenue.toFixed(2)
 
     // Escrevendo arquivos
-    fs.writeFileSync('novo-arquivo.csv', dado1);
-    fs.writeFileSync('arquivo.json', JSON.stringify(resultadoCalculate));
+    console.log("Escrevendo arquivos...")
+    fs.writeFileSync('novo-arquivo.csv', dataRows);
+    fs.writeFileSync('arquivo.json', JSON.stringify(calculationResult));
 
+    console.log("Concluído!")
 }
 
 processData()
