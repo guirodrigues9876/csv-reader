@@ -116,7 +116,6 @@ async function processData(){
 
 
         columns.push(`${daysWeather[i - 1].min_temp}/${daysWeather[i - 1].max_temp}`);
-        // columns.push(daysWeather[i - 1].min_temp.toString() + '/' + daysWeather[i - 1].max_temp.toString());
         columns.push(daysWeather[i-1].max_wind_spd.toString())
         columns.push(daysWeather[i-1].clouds.toString())
         
