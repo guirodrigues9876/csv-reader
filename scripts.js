@@ -9,7 +9,7 @@ function readCSVFile(filePath){
 
 //Função para buscar os dados meteorológicos
 async function getWeatherData() {
-    const apiWeatherURL = "https://api.weatherbit.io/v2.0/history/daily?city_id=3399415&start_date=2023-08-01&end_date=2023-08-32&units=metric&key=d80813fa6eb64eee867ae8b23a2d6615";
+    const apiWeatherURL = `https://api.weatherbit.io/v2.0/history/daily?city_id=3399415&start_date=2023-08-01&end_date=2023-08-32&units=metric&key=API_KEY`;
   
     try {
       const res = await fetch(apiWeatherURL);
@@ -74,13 +74,12 @@ async function processData(){
     let qtdPicole = 0;
     let qtdSorvete = 0;
 
-     for(let i = 0; i < lines.length; i++){
+    for(let i = 0; i < lines.length; i++){
       
       var columns = lines[i].split(",");
       
-      if(i == 0 ){
+      if(i == 0){
         columns.push("Temperatura máxima e mínima")
-        // columns.push("Temperatura mínima")
         columns.push("Máxima das rajadas de vento")
         columns.push("Porcentagem de Nuvens")
 
@@ -88,7 +87,8 @@ async function processData(){
         dado = columns.join(",")
 
         //Vai interando os dados 
-        dado1 = dado1.concat("", dado)        
+        dado1 = dado1.concat("", dado) 
+
       }else{
         
         // Somando a quantidade de refri
@@ -114,7 +114,9 @@ async function processData(){
         columns.push(daysWeather[i-1].max_wind_spd.toString())
         columns.push(daysWeather[i-1].clouds.toString())
         
+        //Juntar novamente as colunas utilizando a vírgula
         dado = columns.join(",")
+        //Vai interando os dados
         dado1 = dado1.concat("\n", dado)
       }          
     }
@@ -123,7 +125,7 @@ async function processData(){
     mediaFat = fatTotal / faturamentos.length;    
     resultadoCalculate.mediaFat = mediaFat.toFixed(2)
 
-    // Escrita síncrona em um arquivo (não recomendada para produção)
+    // Escrevendo arquivos
     fs.writeFileSync('novo-arquivo.csv', dado1);
     fs.writeFileSync('arquivo.json', JSON.stringify(resultadoCalculate));
 
