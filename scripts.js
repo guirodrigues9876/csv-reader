@@ -1,6 +1,6 @@
 import fs from 'fs';
 
-//Function to read the CSV file. Returns an array of lines
+//Função para ler o arquivo CSV
 function readCSVFile(filePath){
     const data = fs.readFileSync('planilha.csv', 'utf8');
     const lines = data.split("\r\n")
