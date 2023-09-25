@@ -28,15 +28,14 @@ async function getWeatherData() {
     }
   }
 
-  let dataRow;
   let dataRows = "";
   
-  var highestRevenue = 0;
-  var dayWithHighestRevenue = 0;
-  var lowestRevenue = Infinity;
-  var dayWithLowestRevenue = 100000;
-  var revenues = [];
-  var totalRevenue = 0;
+  let highestRevenue = 0;
+  let dayWithHighestRevenue = 0;
+  let lowestRevenue = Infinity;
+  let dayWithLowestRevenue = 100000;
+  let revenues = [];
+  let totalRevenue = 0;
 
   function calculateRevenue(day, water, soda, popsicle, iceCream){
 
@@ -44,7 +43,7 @@ async function getWeatherData() {
       console.log("Calculando faturamento...")
     }
 
-    var revenue = 0;
+    let revenue = 0;
     revenue = (water * 3) + (soda * 5) + (popsicle * 7) + (iceCream * 9);
     
     //Capturando dados para calcular a média de faturamento
@@ -91,11 +90,8 @@ async function processData(){
         columns.push("Máxima das rajadas de vento")
         columns.push("Porcentagem de Nuvens")
 
-        //Juntar novamente as colunas utilizando a vírgula
-        dataRow = columns.join(",")
-
-        //Vai interando os dados 
-        dataRows = dataRows.concat("", dataRow) 
+        //Juntar novamente as colunas utilizando a vírgula e concatena as linhas
+        dataRows += "\n" + columns.join(",");
 
       }else{
         
@@ -118,20 +114,19 @@ async function processData(){
 
         calculationResult = calculateRevenue(columns[0], sodaQuantity, waterQuantity, popsicleQuantity, iceCreamQuantity);
 
-        columns.push(daysWeather[i - 1].min_temp.toString() + '/' + daysWeather[i - 1].max_temp.toString());
+
+        columns.push(`${daysWeather[i - 1].min_temp}/${daysWeather[i - 1].max_temp}`);
+        // columns.push(daysWeather[i - 1].min_temp.toString() + '/' + daysWeather[i - 1].max_temp.toString());
         columns.push(daysWeather[i-1].max_wind_spd.toString())
         columns.push(daysWeather[i-1].clouds.toString())
         
-        //Juntar novamente as colunas utilizando a vírgula
-        dataRow = columns.join(",")
-
-        //Concatena as linhas
-        dataRows = dataRows.concat("\n", dataRow)
+        //Juntar novamente as colunas utilizando a vírgula e concatena as linhas
+        dataRows += "\n" + columns.join(",");
       }          
     }
 
     // Calcula a média de faturamento
-    var averageRevenue = totalRevenue / revenues.length;    
+    let averageRevenue = totalRevenue / revenues.length;    
     calculationResult.averageRevenue = averageRevenue.toFixed(2)
 
     // Escrevendo arquivos
