@@ -1,18 +1,28 @@
 import fs from 'fs';
 
-//Função para ler o arquivo CSV
+//Function to read the CSV file
 function readCSVFile(filePath){
-    console.log("Lendo arquivo CSV...");
-    const data = fs.readFileSync('planilha.csv', 'utf8');
-    const lines = data.split("\r\n")
-    return lines;
+  console.log("Reading CSV file...");
+  try {
+      const data = fs.readFileSync(filePath, 'utf8');
+      return data.split("\r\n");
+  } catch (error) {
+      console.error(`Error reading CSV file: ${error.message}`);
+      return [];
+  }
 }
 
-//Função para buscar os dados meteorológicos
+//Function to fetch weather data
 async function getWeatherData() {
-    console.log("Buscando dados meteorológicos...");
+    console.log("Fetching weather data...");
 
-    const apiWeatherURL = `https://api.weatherbit.io/v2.0/history/daily?city_id=3399415&start_date=2023-08-01&end_date=2023-08-32&units=metric&key=d80813fa6eb64eee867ae8b23a2d6615`;
+    const apiKey = '90a4897252af43a191b9fe1ef672ff2c',
+    cityId = '3399415',
+    startDate = '2023-08-01',
+    endDate = '2023-08-32',
+    units = 'metric';
+
+    const apiWeatherURL = `https://api.weatherbit.io/v2.0/history/daily?city_id=${cityId}&start_date=${startDate}&end_date=${endDate}&units=${units}&key=${apiKey}`;
   
     try {
       const res = await fetch(apiWeatherURL);
@@ -28,52 +38,27 @@ async function getWeatherData() {
     }
   }
 
-  var dataRows = "";
-  var highestRevenue = 0;
-  var dayWithHighestRevenue = 0;
-  var lowestRevenue = 100000;
-  var dayWithLowestRevenue = 100000;
-  var revenues = [];
-  var totalRevenue = 0;
+  // Function to calculate revenue for a day
+  function calculateRevenue(day, soda, water, popsicle, iceCream, highestRevenue, dayWithHighestRevenue, lowestRevenue, dayWithLowestRevenue){
 
-  function calculateRevenue(day, soda, water, popsicle, iceCream){
+    console.log("Calculating revenue...")
+    console.log(highestRevenue)
+    const revenue = (soda * 5) + (water * 3) + (popsicle * 7) + (iceCream * 9);
 
-    if(day == 1){
-      console.log("Calculando faturamento...")
+    if (revenue > highestRevenue) {
+      highestRevenue = revenue;
+      dayWithHighestRevenue = day;
     }
 
-    var revenue = 0;
-    revenue = (soda * 5) + (water * 3) + (popsicle * 7) + (iceCream * 9);
-
-    if(revenue > highestRevenue){
-      highestRevenue = revenue
-      dayWithHighestRevenue = day
+    if (revenue < lowestRevenue) {
+      lowestRevenue = revenue;
+      dayWithLowestRevenue = day;
     }
 
-    if(revenue < lowestRevenue){
-      lowestRevenue = revenue
-      dayWithLowestRevenue = day
-    }
-    
-    //Capturando dados para calcular a média de faturamento
-    revenues.push(revenue)
-    totalRevenue += revenue;
-    
-    const result = {
-      dayWithHighestRevenue: dayWithHighestRevenue,
-      highestRevenue: highestRevenue,
-      dayWithLowestRevenue: dayWithLowestRevenue,
-      lowestRevenue: lowestRevenue,
-      totalRevenue: totalRevenue,
-    };
+    return [ revenue, highestRevenue, dayWithHighestRevenue, lowestRevenue, dayWithLowestRevenue ];
+  }
 
-    return result;
-
-}
-
-let calculationResult;
-
-//Função principal para processar os dados
+//Main function to process data
 async function processData(){
     const lines = readCSVFile('planilha.csv');
     const daysWeather = await getWeatherData();
@@ -83,12 +68,17 @@ async function processData(){
         return;
     }
 
-    console.log("Processando dados...")
+    console.log("Processing data...")
 
-    let sodaQuantity = 0;
-    let waterQuantity = 0;
-    let popsicleQuantity = 0;
-    let iceCreamQuantity = 0;
+    //Initialize variables
+    let dataRows = "",
+    highestRevenue = 0,
+    dayWithHighestRevenue = 0,
+    lowestRevenue = Infinity,
+    dayWithLowestRevenue = 100000,
+    revenues = [],
+    revenue = 0,
+    totalRevenue = 0;
 
     for(let i = 0; i < lines.length; i++){
       
@@ -99,56 +89,41 @@ async function processData(){
         columns.push("Máxima das rajadas de vento")
         columns.push("Porcentagem de Nuvens")
 
-        //Juntar novamente as colunas utilizando a vírgula e concatena as linhas
+        // Join the columns back together using a comma and concatenate the lines
         dataRows += "\n" + columns.join(",");
 
-      }else{
+      } else{
+
+        [ revenue, highestRevenue, dayWithHighestRevenue, lowestRevenue, dayWithLowestRevenue ] = calculateRevenue(...columns, highestRevenue, dayWithHighestRevenue, lowestRevenue, dayWithLowestRevenue);
         
-        // Somando a quantidade de refri
-        const soda = parseInt(columns[1]);
-        sodaQuantity += soda;
-        
-        //Somando a quantidade de aguas
-        const water = parseInt(columns[2]);
-        waterQuantity += water;
-        
+        revenues.push(revenue);
+        totalRevenue += revenue;
 
-        //Somando a quandtidade de picole
-        const popsicle = parseInt(columns[3]);
-        popsicleQuantity += popsicle;
-
-        //Somando a quantidade de sorvete
-        const iceCream = parseInt(columns[4]);
-        iceCreamQuantity += iceCream;
-
-        calculationResult = calculateRevenue(columns[0], sodaQuantity, waterQuantity, popsicleQuantity, iceCreamQuantity);
-        iceCreamQuantity = 0;
-        popsicleQuantity = 0;
-        waterQuantity = 0;
-        sodaQuantity = 0;
-
-
+        // Add API data to columns
         columns.push(`${daysWeather[i - 1].min_temp}/${daysWeather[i - 1].max_temp}`);
         columns.push(daysWeather[i-1].max_wind_spd.toString())
         columns.push(daysWeather[i-1].clouds.toString())
         
-        //Juntar novamente as colunas utilizando a vírgula e concatena as linhas
+        // Join the columns back together using a comma and concatenate the lines
         dataRows += "\n" + columns.join(",");
       }          
     }
 
-    // Calcula a média de faturamento
-    let averageRevenue = totalRevenue / revenues.length;    
-    calculationResult.averageRevenue = averageRevenue.toFixed(2)
+    const jsonResult = {
+      dayWithHighestRevenue,
+      highestRevenue,
+      dayWithLowestRevenue,
+      lowestRevenue,
+      totalRevenue,
+      averageRevenue: (totalRevenue / revenues.length).toFixed(2),
+    }
 
-    console.log(calculationResult)
-
-    // Escrevendo arquivos
-    console.log("Escrevendo arquivos...")
+    // Writing files
+    console.log("Writing files...")
     fs.writeFileSync('novo-arquivo.csv', dataRows);
-    fs.writeFileSync('arquivo.json', JSON.stringify(calculationResult));
+    fs.writeFileSync('arquivo.json', JSON.stringify(jsonResult));
 
-    console.log("Concluído!")
+    console.log("Completed!")
 }
 
 processData()
