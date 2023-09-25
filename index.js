@@ -66,12 +66,6 @@ async function getWeatherData() {
       lowestRevenue: lowestRevenue,
       totalRevenue: totalRevenue,
     };
-    
-    soda = 0;
-    water = 0;
-    popsicle = 0;
-    iceCream = 0;
-    revenue = 0;
 
     return result;
 
@@ -146,6 +140,8 @@ async function processData(){
     // Calcula a média de faturamento
     let averageRevenue = totalRevenue / revenues.length;    
     calculationResult.averageRevenue = averageRevenue.toFixed(2)
+
+    console.log(calculationResult)
 
     // Escrevendo arquivos
     console.log("Escrevendo arquivos...")
